@@ -1,0 +1,14 @@
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\bin\Debug\net8.0\GerenciamentoDeMemoria.exe
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\bin\Debug\net8.0\GerenciamentoDeMemoria.deps.json
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\bin\Debug\net8.0\GerenciamentoDeMemoria.runtimeconfig.json
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\bin\Debug\net8.0\GerenciamentoDeMemoria.dll
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\bin\Debug\net8.0\GerenciamentoDeMemoria.pdb
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\GerenciamentoDeMemoria.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\GerenciamentoDeMemoria.AssemblyInfoInputs.cache
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\GerenciamentoDeMemoria.AssemblyInfo.cs
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\GerenciamentoDeMemoria.csproj.CoreCompileInputs.cache
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\GerenciamentoDeMemoria.dll
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\refint\GerenciamentoDeMemoria.dll
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\GerenciamentoDeMemoria.pdb
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\GerenciamentoDeMemoria.genruntimeconfig.cache
+C:\Users\joaoh\source\repos\GerenciamentoDeMemoria\obj\Debug\net8.0\ref\GerenciamentoDeMemoria.dll
