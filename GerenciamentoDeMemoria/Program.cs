@@ -5,104 +5,197 @@ class Program
 {
     static void Main()
     {
-        List<BlocoMemoria> memoria = new List<BlocoMemoria>();
-        int enderecoAtual = 0;
-
-        Console.WriteLine("Configuração Inicial da Memória:");
-        Console.WriteLine("Digite os tamanhos dos blocos de memória separados por espaço:");
-
-        string[] entradasBlocos = Console.ReadLine().Split(' ');
-        foreach (var entrada in entradasBlocos)
+        while (true)
         {
-            if (int.TryParse(entrada, out int tamanhoBloco))
-            {
-                memoria.Add(new BlocoMemoria
-                {
-                    Inicio = enderecoAtual,
-                    Tamanho = tamanhoBloco,
-                    Ocupado = false
-                });
+            List<BlocoMemoria> memoriaLivre = new List<BlocoMemoria>();
+            List<Alocacao> processosAlocados = new List<Alocacao>();
+            List<BlocoOriginal> blocosOriginais = new List<BlocoOriginal>();
+            List<(int Inicio, int Fim)> espacosSeguranca = new List<(int, int)>();
+            int enderecoAtual = 0;
 
-                enderecoAtual += tamanhoBloco;
+            Console.WriteLine("\nSimulador de Alocação de Memória\n");
+
+            Console.WriteLine("Digite os tamanhos dos blocos de memória (separados por espaço):");
+            string[] entradasBlocos = Console.ReadLine().Split(' ');
+
+            foreach (var entrada in entradasBlocos)
+            {
+                if (int.TryParse(entrada, out int tamanho))
+                {
+                    memoriaLivre.Add(new BlocoMemoria { Inicio = enderecoAtual, Tamanho = tamanho });
+                    blocosOriginais.Add(new BlocoOriginal { Inicio = enderecoAtual, Fim = enderecoAtual + tamanho - 1 });
+                    enderecoAtual += tamanho;
+                }
             }
-        }
 
-        Console.WriteLine("\nDigite os tamanhos dos processos separados por espaço:");
-        string[] entradas = Console.ReadLine().Split(' ');
-        List<int> processos = new List<int>();
-        foreach (var entrada in entradas)
-        {
-            if (int.TryParse(entrada, out int tamanho))
-                processos.Add(tamanho);
-        }
-
-        Console.WriteLine("\nEscolha a estratégia de alocação:");
-        Console.WriteLine("1 - First Fit");
-        Console.WriteLine("2 - Best Fit");
-        int opcao = int.Parse(Console.ReadLine());
-
-        foreach (var processo in processos)
-        {
-            bool alocado = false;
-
-            if (opcao == 1) // First Fit
+            int espacoSeguranca;
+            while (true)
             {
-                foreach (var bloco in memoria)
+                Console.WriteLine("\nDigite o espaço de segurança entre processos (em unidades de endereço):");
+                if (int.TryParse(Console.ReadLine(), out espacoSeguranca) && espacoSeguranca >= 0)
+                    break;
+                else
+                    Console.WriteLine("Valor inválido. Digite um número inteiro maior ou igual a 0.");
+            }
+
+            Console.WriteLine("\nDigite os tamanhos dos processos (separados por espaço):");
+            string[] entradasProcessos = Console.ReadLine().Split(' ');
+            List<int> processos = new List<int>();
+            foreach (var entrada in entradasProcessos)
+            {
+                if (int.TryParse(entrada, out int tamanho))
+                    processos.Add(tamanho);
+            }
+
+            Console.WriteLine("\nEscolha a estratégia de alocação:");
+            Console.WriteLine("1 - First Fit");
+            Console.WriteLine("2 - Best Fit");
+            Console.WriteLine("3 - Worst Fit");
+            int opcao = int.Parse(Console.ReadLine());
+
+            foreach (var processo in processos)
+            {
+                BlocoMemoria blocoEscolhido = null;
+
+                if (opcao == 1) // First
                 {
-                    if (!bloco.Ocupado && bloco.Tamanho >= processo)
+                    foreach (var bloco in memoriaLivre)
                     {
-                        Alocar(bloco, processo, memoria);
-                        alocado = true;
-                        break;
+                        if (bloco.Tamanho >= processo + espacoSeguranca)
+                        {
+                            blocoEscolhido = bloco;
+                            break;
+                        }
+                    }
+                }
+                else if (opcao == 2) // Best
+                {
+                    foreach (var bloco in memoriaLivre)
+                    {
+                        if (bloco.Tamanho >= processo + espacoSeguranca)
+                        {
+                            if (blocoEscolhido == null || bloco.Tamanho < blocoEscolhido.Tamanho)
+                                blocoEscolhido = bloco;
+                        }
+                    }
+                }
+                else if (opcao == 3) // Worst
+                {
+                    foreach (var bloco in memoriaLivre)
+                    {
+                        if (bloco.Tamanho >= processo + espacoSeguranca)
+                        {
+                            if (blocoEscolhido == null || bloco.Tamanho > blocoEscolhido.Tamanho)
+                                blocoEscolhido = bloco;
+                        }
+                    }
+                }
+
+                if (blocoEscolhido != null)
+                {
+                    processosAlocados.Add(new Alocacao
+                    {
+                        Processo = $"P{processo}",
+                        Inicio = blocoEscolhido.Inicio,
+                        Tamanho = processo
+                    });
+
+                    if (espacoSeguranca > 0)
+                    {
+                        espacosSeguranca.Add((
+                            blocoEscolhido.Inicio + processo,
+                            blocoEscolhido.Inicio + processo + espacoSeguranca - 1
+                        ));
+                    }
+
+                    blocoEscolhido.Inicio += processo + espacoSeguranca;
+                    blocoEscolhido.Tamanho -= processo + espacoSeguranca;
+
+                    if (blocoEscolhido.Tamanho <= 0)
+                        memoriaLivre.Remove(blocoEscolhido);
+                }
+                else
+                {
+                    Console.WriteLine($"Processo de tamanho {processo} não alocado (memória insuficiente).");
+                }
+            }
+
+            Console.WriteLine("\nEstrutura inicial dos Blocos de Memória (inicial)");
+            int contadorBloco = 1;
+            foreach (var bloco in blocosOriginais)
+            {
+                Console.WriteLine($"Bloco {contadorBloco}: [{bloco.Inicio}-{bloco.Fim}]");
+                contadorBloco++;
+            }
+
+            Console.WriteLine("\nMapa completo da memória");
+
+            foreach (var blocoOriginal in blocosOriginais)
+            {
+                Console.WriteLine($"\nBloco [{blocoOriginal.Inicio}-{blocoOriginal.Fim}]:");
+
+                int pos = blocoOriginal.Inicio;
+                while (pos <= blocoOriginal.Fim)
+                {
+                    bool encontrado = false;
+
+                    foreach (var aloc in processosAlocados)
+                    {
+                        if (pos == aloc.Inicio)
+                        {
+                            int fim = aloc.Inicio + aloc.Tamanho - 1;
+                            Console.WriteLine($"  [{aloc.Inicio}-{fim}]: {aloc.Processo}");
+                            pos = fim + 1;
+                            encontrado = true;
+                            break;
+                        }
+                    }
+
+                    if (encontrado) continue;
+
+                    foreach (var espaco in espacosSeguranca)
+                    {
+                        if (pos >= espaco.Inicio && pos <= espaco.Fim)
+                        {
+                            Console.WriteLine($"  [{espaco.Inicio}-{espaco.Fim}]: Espaço de Segurança");
+                            pos = espaco.Fim + 1;
+                            encontrado = true;
+                            break;
+                        }
+                    }
+
+                    if (encontrado) continue;
+
+                    foreach (var livre in memoriaLivre)
+                    {
+                        if (pos == livre.Inicio)
+                        {
+                            int fim = livre.Inicio + livre.Tamanho - 1;
+                            Console.WriteLine($"  [{livre.Inicio}-{fim}]: Livre");
+                            pos = fim + 1;
+                            encontrado = true;
+                            break;
+                        }
+                    }
+
+                    if (!encontrado)
+                    {
+                        Console.WriteLine($"  [{pos}]: Indefinido");
+                        pos++;
                     }
                 }
             }
-            else if (opcao == 2) // Best Fit
-            {
-                BlocoMemoria melhorBloco = null;
-                foreach (var bloco in memoria)
-                {
-                    if (!bloco.Ocupado && bloco.Tamanho >= processo)
-                    {
-                        if (melhorBloco == null || bloco.Tamanho < melhorBloco.Tamanho)
-                            melhorBloco = bloco;
-                    }
-                }
 
-                if (melhorBloco != null)
-                {
-                    Alocar(melhorBloco, processo, memoria);
-                    alocado = true;
-                }
+            Console.WriteLine("\nDeseja fazer outra simulação? (s/n)");
+            string resposta = Console.ReadLine().ToLower();
+
+            if (resposta != "s")
+            {
+                break;
             }
 
-            if (!alocado)
-                Console.WriteLine($"Processo de tamanho {processo} não alocado (memória insuficiente).");
+            Console.Clear();
         }
-
-        Console.WriteLine("\nEstado final da memória");
-        foreach (var bloco in memoria)
-            Console.WriteLine(bloco);
-    }
-
-    static void Alocar(BlocoMemoria bloco, int tamanhoProcesso, List<BlocoMemoria> memoria)
-    {
-        int index = memoria.IndexOf(bloco);
-        BlocoMemoria novoBloco = new BlocoMemoria
-        {
-            Inicio = bloco.Inicio,
-            Tamanho = tamanhoProcesso,
-            Ocupado = true,
-            Processo = $"P{tamanhoProcesso}"
-        };
-
-        bloco.Inicio += tamanhoProcesso;
-        bloco.Tamanho -= tamanhoProcesso;
-
-        if (bloco.Tamanho == 0)
-            memoria[index] = novoBloco;
-        else
-            memoria.Insert(index, novoBloco);
     }
 }
 
@@ -110,11 +203,17 @@ class BlocoMemoria
 {
     public int Inicio { get; set; }
     public int Tamanho { get; set; }
-    public bool Ocupado { get; set; }
-    public string Processo { get; set; } = "";
+}
 
-    public override string ToString()
-    {
-        return $"Início: {Inicio}, Tamanho: {Tamanho}, Ocupado: {Ocupado}, Processo: {Processo}";
-    }
+class Alocacao
+{
+    public string Processo { get; set; }
+    public int Inicio { get; set; }
+    public int Tamanho { get; set; }
+}
+
+class BlocoOriginal
+{
+    public int Inicio { get; set; }
+    public int Fim { get; set; }
 }
